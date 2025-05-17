@@ -1,15 +1,12 @@
-from .views import *
 from django.urls import path, include
-from rest_framework import routers
+from rest_framework.routers import SimpleRouter
+from .views import *
 
-
-
-router =routers.SimpleRouter()
-router.register(r'skill', SkillViewSet, basename='skill_list')
-router.register(r'user', UserProfileViewSet, basename='user_list')
-router.register(r'offer', OfferViewSet, basename='offer_list')
-router.register(r'review', ReviewViewSet, basename='review_list')
-
+router = SimpleRouter()
+router.register(r'skill', SkillViewSet, basename='skill')
+router.register(r'user', UserProfileViewSet, basename='user')
+router.register(r'offer', OfferViewSet, basename='offer')
+router.register(r'review', ReviewViewSet, basename='review')
 
 urlpatterns = [
     path('', include(router.urls)),

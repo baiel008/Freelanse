@@ -5,13 +5,23 @@ from .models import *
 class SkillSerializer(serializers.ModelSerializer):
     class Meta:
         model = Skill
-        fields = '__all__'
+        fields = ['id', 'skill_name']
 
 
-class UserProfileSerializer(serializers.ModelSerializer):
+class UserProfileListSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserProfile
-        fields = '__all__'
+        fields = ['id', 'username', 'first_name', 'last_name', 'role']
+
+
+class UserProfileDetailSerializer(serializers.ModelSerializer):
+    skills = SkillSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = UserProfile
+        fields = ['id', 'username', 'first_name', 'last_name', 'email', 'role',
+                  'bio', 'avatar', 'skills', 'social_links', 'date_registered']
+
 
 
 class CategoryListSerializer(serializers.ModelSerializer):
@@ -21,33 +31,60 @@ class CategoryListSerializer(serializers.ModelSerializer):
 
 
 
-class OfferSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Offer
-        fields = '__all__'
-
-
-class ReviewSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Review
-        fields = '__all__'
-
-
 class ProjectListSerializer(serializers.ModelSerializer):
-    created_at = serializers.DateTimeField(format('%d-%m-%Y %H:%M'))
+    client = UserProfileListSerializer()
+    deadline = serializers.DateField(format='%d-%m-%Y')
+    created_at = serializers.DateTimeField(format='%d-%m-%Y %H:%M')
+
     class Meta:
         model = Project
-        fields = ['id', 'created_at', 'deadline']
-
-
-class CategoryDetailSerializer(serializers.ModelSerializer):
-    category_project = ProjectListSerializer()
-    class Meta:
-        model = Category
-        fields = ['id', 'category_name', 'category_project']
+        fields = ['id', 'title', 'budget', 'status', 'deadline', 'created_at', 'client']
 
 
 class ProjectDetailSerializer(serializers.ModelSerializer):
+    client = UserProfileListSerializer()
+    category = CategoryListSerializer()
+    skills_required = SkillSerializer(many=True)
+    deadline = serializers.DateField(format='%d-%m-%Y')
+    created_at = serializers.DateTimeField(format='%d-%m-%Y %H:%M')
+
     class Meta:
         model = Project
-        fields = '__all__'
+        fields = [
+            'id', 'title', 'description', 'budget', 'deadline', 'status',
+            'category', 'skills_required', 'client', 'created_at'
+        ]
+
+
+class CategoryDetailSerializer(serializers.ModelSerializer):
+    category_projects = ProjectListSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Category
+        fields = ['id', 'category_name', 'category_projects']
+
+
+
+class OfferSerializer(serializers.ModelSerializer):
+    freelancer = UserProfileListSerializer()
+    project = ProjectListSerializer()
+    proposed_deadline = serializers.DateField(format='%d-%m-%Y')
+    created_at = serializers.DateTimeField(format='%d-%m-%Y %H:%M')
+
+    class Meta:
+        model = Offer
+        fields = [
+            'id', 'project', 'freelancer', 'message',
+            'proposed_budget', 'proposed_deadline', 'created_at'
+        ]
+
+
+
+class ReviewSerializer(serializers.ModelSerializer):
+    reviewer = UserProfileListSerializer()
+    target = UserProfileListSerializer()
+    created_at = serializers.DateTimeField(format='%d-%m-%Y %H:%M')
+
+    class Meta:
+        model = Review
+        fields = ['id', 'project', 'reviewer', 'target', 'rating', 'comment', 'created_at']
